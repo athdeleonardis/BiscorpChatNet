@@ -18,7 +18,7 @@ app.get('/', (req, res) => {
 })
 
 app.get('/profiles', (req, res) => {
-  const sql_query = "SELECT * FROM profile";
+  const sql_query = "SELECT id,username,name,post_count,follow_count,date_created FROM profile WHERE is_deleted=0";
   db.query(sql_query, (err, data) => {
     if (err) return res.json(err);
     return res.json(data);
