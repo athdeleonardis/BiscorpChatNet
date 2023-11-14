@@ -1,5 +1,5 @@
 import React from 'react'
-
+import { Link } from 'react-router-dom'
 import logo from '../assets/logo.gif'
 
 function Navigation() {
@@ -10,10 +10,13 @@ function Navigation() {
           <img src={logo} alt="Logo" />
         </li>
         <li>
-          <a href="/">Home</a>
+          <Link to="/">Home</Link>
         </li>
         <li>
-          <a href="/Login">Login</a>
+          <Link to="/login">Login</Link>
+        </li>
+        <li>
+          <Link to="/profiles">Profiles</Link>
         </li>
       </ul>
     </nav>

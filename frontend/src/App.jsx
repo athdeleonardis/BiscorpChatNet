@@ -1,12 +1,21 @@
-import React, { useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './App.css'
-import Navigation from './components/Navigation.jsx'
+import Layout from './components/Layout.jsx'
+import Home from './components/Home.jsx'
+import PageNotFound from './components/PageNotFound.jsx'
+import TempDisplayProfiles from './components/TempDisplayProfiles.jsx'
 
 function App() {
   return (
-    <div id="root">
-      <Navigation/>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="profiles" element={<TempDisplayProfiles />} />
+          <Route path="*" element={<PageNotFound />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
 
