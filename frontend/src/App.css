@@ -4,3 +4,35 @@ table, th, td {
   border: 1px solid;
   border-collapse: collapse;
 }
+
+nav#Navigation ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 50px;
+  background-color: #333333;
+}
+
+nav#Navigation ul li {
+  float: left;
+  transition-duration: 0.4s;
+}
+
+nav#Navigation ul li a {
+  display: block;
+  padding: 16px;
+  text-decoration: none;
+  color: #a9a5ff;
+}
+
+nav#Navigation ul li img {
+  height: 50px;
+  object-fit: contain;
+}
+
+nav#Navigation ul li a:hover {
+  background-color: black;
+  color: white;
+  padding: 16px;
+}
