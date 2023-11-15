@@ -26,8 +26,8 @@ function CreateProfile() {
   const [waitForSubmit, setWaitForSubmit] = useState(false);
   const [errors, setErrors] = useState({ username: "", name: "", password: "" })
 
-  function checkUsernameExists(username) {
-    fetch('http://127.0.0.1:3000/profile-exists/' + username)
+  async function checkUsernameExists(username) {
+    return fetch('http://127.0.0.1:3000/profile-exists/' + username)
       .then(res => res.json())
       .then(data => { return data; })
       .then(data => {
@@ -35,11 +35,13 @@ function CreateProfile() {
           errors.username = "Username already exists.\n"
           setUsernameShowError(true)
         }
+        return data.exists
       })
       .catch(err => {
         console.log(err)
         errors.username = "No connection.\n"
         setUsernameShowError(true)
+        return true
       })
   }
 
@@ -105,19 +107,22 @@ function CreateProfile() {
       setWaitForSubmit(false)
       return;
     }
-    checkUsernameExists(inputs.username)
-    if (usernameShowError) {
-      setWaitForSubmit(false)
-      return
-    }
 
-    // Input is a-ok!
-    securitySHA256(inputs.password)
-    .then(password_hash => {
-      fetch(`http://127.0.0.1:3000/create-profile/${inputs.username}&${inputs.name}&${password_hash}&${isPrivate}`)
-      .then(() => { setInputs({ username: "", name: "", password: "" }); setIsPrivate(false); setWaitForSubmit(false); })
-      .catch((err) => { console.log(err); setWaitForSubmit(false); })
+    checkUsernameExists(inputs.username)
+    .then((username_exists) => {
+      if (!username_exists) {
+        // Input is a-ok!
+        securitySHA256(inputs.password)
+        .then(password_hash => {
+          fetch(`http://127.0.0.1:3000/create-profile/${inputs.username}&${inputs.name}&${password_hash}&${isPrivate}`)
+          .then(() => { setInputs({ username: "", name: "", password: "" }); setIsPrivate(false); setWaitForSubmit(false); })
+          .catch((err) => { console.log(err); setWaitForSubmit(false); })
+        })
+      }
+      else
+        setWaitForSubmit(false)
     })
+
   }
 
   return (
@@ -139,7 +144,7 @@ function CreateProfile() {
         <label>Private:
           <input type="checkbox" name="is_private" checked={isPrivate} onChange={handleCheckbox} />
         </label>
-        <input type="submit" />
+        <input type="submit" value="Create" />
         {waitForSubmit
           ? (<img className="LoadingIcon" src={loadingIcon} />)
           : (<></>)
