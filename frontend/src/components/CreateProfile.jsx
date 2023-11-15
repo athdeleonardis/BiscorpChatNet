@@ -1,6 +1,11 @@
 import React, { useState } from 'react'
-import { securityCheckPassword, securitySHA256 } from '../util/security';
+import securitySHA256 from '../util/security';
 import loadingIcon from '../assets/loading-icon.png'
+import { NameChecker, PasswordChecker, UsernameChecker } from '../util/string_checking';
+
+const passwordChecker = new PasswordChecker(7, `~!@#$%^&*()-_=+[{]}\|;:'",<.>/?`)
+const usernameChecker = new UsernameChecker(4, 20, `-_.`)
+const nameChecker = new NameChecker(50)
 
 function ErrorMessages({text}) {
   return (
@@ -13,75 +18,77 @@ function ErrorMessages({text}) {
 }
 
 function CreateProfile() {
-  const [inputs, setInputs] = useState({ username: "", name: "", password: "", is_private: false })
-  const [errors, setErrors] = useState({ username: "", name: "", password: "" })
-  const [waitingForUsernameQuery, setWaitingForUsernameQuery] = useState(false)
+  const [inputs, setInputs] = useState({ username: "", name: "", password: "" })
+  const [isPrivate, setIsPrivate] = useState(false)
   const [usernameShowError, setUsernameShowError] = useState(false)
   const [nameShowError, setNameShowError] = useState(false)
   const [passwordShowError, setPasswordShowError] = useState(false)
   const [waitForSubmit, setWaitForSubmit] = useState(false);
-
+  const [errors, setErrors] = useState({ username: "", name: "", password: "" })
 
   function checkUsernameExists(username) {
-    setWaitingForUsernameQuery(true)
     fetch('http://127.0.0.1:3000/profile-exists/' + username)
       .then(res => res.json())
-      .then(data => { console.log(data.exists); return data; })
+      .then(data => { return data; })
       .then(data => {
         if (data.exists) {
-          setErrors(values => ({...values, username: values.username + "Username already exists.\n"}))
+          errors.username = "Username already exists.\n"
           setUsernameShowError(true)
         }
-        setWaitingForUsernameQuery(false)
       })
       .catch(err => {
         console.log(err)
-        setErrors(values => ({...values, username: values.username + "No connection.\n"}))
+        errors.username = "No connection.\n"
         setUsernameShowError(true)
       })
   }
 
-  function checkPassword(password) {
-    let result = {}
-    securityCheckPassword(password, result)
-    if (!result.success) {
-      errors.password = result.message
-      setPasswordShowError(true);
+  function checkInput(value, valueName, stringChecker, setShowError) {
+    if (value === "") {
+      errors[valueName] = ""
+      setShowError(false)
+      return
     }
+    let result = { success: true, message: "" }
+    stringChecker.check(value, result)
+    if (!result.success) {
+      errors[valueName] = result.message
+      setShowError(true)
+      return
+    }
+    errors[valueName] = ""
+    setShowError(false)
   }
 
   function handleChange(event) {
-    const name = event.target.name
+    const valueName = event.target.name
     const value = event.target.value
-    
-    setInputs(values => ({...values, [name]: value}))
+    console.log(typeof(value))
     console.log(value)
+    
+    setInputs(values => ({...values, [valueName]: value}))
 
-    switch (name) {
+    switch (valueName) {
       case "username":
-        setUsernameShowError(false)
-        errors.username = ""
-        if (value === "")
-          break
-        checkUsernameExists(value)
+        checkInput(value, valueName, usernameChecker, setUsernameShowError)
         break;
       case "name":
-        setNameShowError(false)
-        errors.name = ""
+        checkInput(value, valueName, nameChecker, setNameShowError)
         break;
       case "password":
-        setPasswordShowError(false)
-        errors.password = ""
-        checkPassword(value)
+        checkInput(value, valueName, passwordChecker, setPasswordShowError)
         break;
       default:
         break;
     }
   }
 
+  function handleCheckbox(event) {
+    setIsPrivate(!isPrivate)
+  }
+
   function handleSubmit(event) {
     event.preventDefault()
-    console.log(inputs)
     if (waitForSubmit)
       return;
     setWaitForSubmit(true);
@@ -104,13 +111,12 @@ function CreateProfile() {
       return
     }
 
-    console.log("Input is okay")
     // Input is a-ok!
     securitySHA256(inputs.password)
     .then(password_hash => {
-      fetch(`http://127.0.0.1:3000/create-profile/${inputs.username}&${inputs.name}&${password_hash}&${inputs.is_private}`)
-      .then(() => { setInputs({ username: "", name: "", password: "", is_private: false }); setWaitForSubmit(false); })
-      .catch((err) => { console.log(err); setWaitForSubmit(false) })
+      fetch(`http://127.0.0.1:3000/create-profile/${inputs.username}&${inputs.name}&${password_hash}&${isPrivate}`)
+      .then(() => { setInputs({ username: "", name: "", password: "" }); setIsPrivate(false); setWaitForSubmit(false); })
+      .catch((err) => { console.log(err); setWaitForSubmit(false); })
     })
   }
 
@@ -120,18 +126,18 @@ function CreateProfile() {
       <form onSubmit={handleSubmit}>
         <label>Username:
           <input type="text" name="username" value={inputs.username || ""} onChange={handleChange} />
-          {usernameShowError ? (<p className="InputError">Error: {errors.username}</p>) : (<></>)}
+          {usernameShowError ? (<ErrorMessages text={errors.username} />) : (<></>)}
         </label>
         <label>Name:
           <input type="text" name="name" value={inputs.name || ""} onChange={handleChange} />
-          {nameShowError ? (<div className="InputErrors"><p className="InputError">{errors.name}</p></div>) : (<></>)}
+          {nameShowError ? (<ErrorMessages text={errors.name} />) : (<></>)}
         </label>
         <label>Password:
-          <input type="text" name="password" value={inputs.password || ""} onChange={handleChange} />
+          <input type="password" name="password" value={inputs.password || ""} onChange={handleChange} />
           {passwordShowError ? (<ErrorMessages text={errors.password} />) : (<></>)}
         </label>
         <label>Private:
-          <input type="checkbox" name="is_private" value={inputs.is_private} onChange={handleChange} />
+          <input type="checkbox" name="is_private" checked={isPrivate} onChange={handleCheckbox} />
         </label>
         <input type="submit" />
         {waitForSubmit

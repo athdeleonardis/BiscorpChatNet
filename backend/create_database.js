@@ -8,7 +8,7 @@ const PASSWORD = CONFIG.database.password
 const DATABASE_NAME = CONFIG.database.name
 
 // Type Sizes
-const USERNAME_SIZE = 15
+const USERNAME_SIZE = 20
 const HASH_SIZE = 64
 const NAME_SIZE = 50
 const TEXT_SIZE = 255
