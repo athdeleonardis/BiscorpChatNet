@@ -16,6 +16,9 @@ function Navigation() {
           <Link to="/login">Login</Link>
         </li>
         <li>
+          <Link to="/create-profile">Register</Link>
+        </li>
+        <li>
           <Link to="/profiles">Profiles</Link>
         </li>
       </ul>

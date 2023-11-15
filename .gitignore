@@ -132,3 +132,6 @@ dist
 # Private information
 config.private.json
 config.public.json
+
+# Hide from git
+hidden/

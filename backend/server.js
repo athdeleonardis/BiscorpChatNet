@@ -25,6 +25,32 @@ app.get('/profiles', (req, res) => {
   })
 })
 
+app.get('/create-profile/:username&:name&:password&:isprivate', (req, res) => {
+  const username = req.params.username
+  const name = req.params.name
+  const password_hash = req.params.password
+  const is_private = req.params.isprivate == 'false' ? '0' : '1'
+  const values = [[username, name, password_hash, is_private]]
+  const sql_query = "INSERT INTO profile (`username`, `name`, `password`, `is_private`) VALUES (?)"
+  console.log(sql_query)
+  db.query(sql_query, values, (err, data) => {
+    console.log("Made it here first")
+    if (err) return res.json(err);
+    console.log("Made it here")
+    return res.json(data)
+  })
+})
+
+app.get('/profile-exists/:username', (req, res) => {
+  console.log(req.params)
+  const username = req.params.username;
+  const sql_query = `SELECT id FROM profile WHERE username="${username}"`
+  db.query(sql_query, (err, data) => {
+    if (err) return res.json(err);
+    return res.json({ exists: data && data.length>0 })
+  })
+})
+
 
 app.listen(config.server.port, config.server.host, () => {
   console.log(`Server running at http://${config.server.host}:${config.server.port}/`);

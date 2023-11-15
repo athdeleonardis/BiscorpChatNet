@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './App.css'
 import Layout from './components/Layout.jsx'
 import Home from './components/Home.jsx'
+import CreateProfile from './components/CreateProfile.jsx'
 import PageNotFound from './components/PageNotFound.jsx'
 import TempDisplayProfiles from './components/TempDisplayProfiles.jsx'
 
@@ -11,6 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="create-profile" element={<CreateProfile />} />
           <Route path="profiles" element={<TempDisplayProfiles />} />
           <Route path="*" element={<PageNotFound />} />
         </Route>

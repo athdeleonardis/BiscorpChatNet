@@ -67,10 +67,10 @@ pre_connection.connect((err) => {
             name ${NAME_TYPE} NOT NULL, \
 
             is_private BOOLEAN, \
-            post_count ${COUNT_TYPE}, \
-            follow_count ${COUNT_TYPE}, \
+            post_count ${COUNT_TYPE} NOT NULL DEFAULT 0, \
+            follow_count ${COUNT_TYPE} NOT NULL DEFAULT 0, \
             date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, \
-            is_deleted BOOLEAN, \
+            is_deleted BOOLEAN NOT NULL DEFAULT 0, \
             PRIMARY KEY (id)\
             )`,
             (err, _) => { throw_error(err) }
