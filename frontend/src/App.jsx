@@ -5,6 +5,7 @@ import Home from './components/Home.jsx'
 import CreateProfile from './components/CreateProfile.jsx'
 import PageNotFound from './components/PageNotFound.jsx'
 import TempDisplayProfiles from './components/TempDisplayProfiles.jsx'
+import Profile from './components/Profile.jsx'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="create-profile" element={<CreateProfile />} />
           <Route path="profiles" element={<TempDisplayProfiles />} />
+          <Route path="profile/:username" element={<Profile />} />
           <Route path="*" element={<PageNotFound />} />
         </Route>
       </Routes>

@@ -18,13 +18,16 @@ function ErrorMessages({text}) {
 }
 
 function CreateProfile() {
+  // Form entries
   const [inputs, setInputs] = useState({ username: "", name: "", password: "" })
   const [isPrivate, setIsPrivate] = useState(false)
+  // Booleans for whether to show errors
   const [usernameShowError, setUsernameShowError] = useState(false)
   const [nameShowError, setNameShowError] = useState(false)
   const [passwordShowError, setPasswordShowError] = useState(false)
-  const [waitForSubmit, setWaitForSubmit] = useState(false);
   const [errors, setErrors] = useState({ username: "", name: "", password: "" })
+  // Prevent submission of form multiple times
+  const [waitForSubmit, setWaitForSubmit] = useState(false);
 
   async function checkUsernameExists(username) {
     return fetch('http://127.0.0.1:3000/profile-exists/' + username)

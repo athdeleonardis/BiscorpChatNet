@@ -40,6 +40,19 @@ app.get('/create-profile/:username&:name&:password&:isprivate', (req, res) => {
   })
 })
 
+app.get('/profile-show/:username', (req, res) => {
+  const username = req.params.username
+  const sql_query = `SELECT id,username,name,post_count,follow_count,date_created,is_private FROM profile WHERE username='${username}' AND is_deleted=0`
+  db.query(sql_query, (err, data) => {
+    if (err) return res.json(err)
+    if (data && data.length > 0) {
+      let profile_data = data[0]
+      return res.json({...profile_data, exists: true})
+    }
+    return res.json({exists: false})
+  })
+})
+
 app.get('/profile-exists/:username', (req, res) => {
   const username = req.params.username;
   const sql_query = `SELECT id FROM profile WHERE username="${username}"`
