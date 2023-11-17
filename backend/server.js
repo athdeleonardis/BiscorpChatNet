@@ -18,10 +18,19 @@ app.get('/', (req, res) => {
 })
 
 app.get('/profiles', (req, res) => {
-  const sql_query = "SELECT id,username,name,post_count,follow_count,date_created FROM profile WHERE is_deleted=0";
+  const sql_query = "SELECT id,username,name,post_count,follower_count,following_count,date_created FROM profile WHERE is_deleted=0";
   db.query(sql_query, (err, data) => {
     if (err) return res.json(err);
     return res.json(data);
+  })
+})
+
+app.get('/postfeed/:id', (req, res) => {
+  const profile_id = parseInt(req.params.id)
+  const sql_query = `SELECT * FROM post WHERE id=${profile_id}`
+  db.query(sql_query, (err, data) => {
+    if (err) return res.json(err)
+    return res.json(data)
   })
 })
 
@@ -42,7 +51,7 @@ app.get('/create-profile/:username&:name&:password&:isprivate', (req, res) => {
 
 app.get('/profile-show/:username', (req, res) => {
   const username = req.params.username
-  const sql_query = `SELECT id,username,name,post_count,follow_count,date_created,is_private FROM profile WHERE username='${username}' AND is_deleted=0`
+  const sql_query = `SELECT id,username,name,post_count,follower_count,following_count,date_created,is_private FROM profile WHERE username='${username}' AND is_deleted=0`
   db.query(sql_query, (err, data) => {
     if (err) return res.json(err)
     if (data && data.length > 0) {

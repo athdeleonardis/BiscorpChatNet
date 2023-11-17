@@ -68,7 +68,8 @@ pre_connection.connect((err) => {
 
             is_private BOOLEAN, \
             post_count ${COUNT_TYPE} NOT NULL DEFAULT 0, \
-            follow_count ${COUNT_TYPE} NOT NULL DEFAULT 0, \
+            follower_count ${COUNT_TYPE} NOT NULL DEFAULT 0, \
+            following_count ${COUNT_TYPE} NOT NULL DEFAULT 0, \
             date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, \
             is_deleted BOOLEAN NOT NULL DEFAULT 0, \
             PRIMARY KEY (id)\
@@ -80,14 +81,14 @@ pre_connection.connect((err) => {
         connection.query(
             `CREATE TABLE Follow (\
             follower ${PROFILE_ID_TYPE}, \
-            followee ${PROFILE_ID_TYPE}, \
+            following ${PROFILE_ID_TYPE}, \
             FOREIGN KEY (follower) REFERENCES Profile(id), \
-            FOREIGN KEY (followee) REFERENCES Profile(id), \
-            PRIMARY KEY (follower, followee)\
+            FOREIGN KEY (following) REFERENCES Profile(id), \
+            PRIMARY KEY (follower, following)\
             )`,
             (err, _) => { throw_error(err) }
         )
-        console.log("Created table 'follow'")
+        console.log("Created table 'Follow'")
     
         connection.query(
             `CREATE TABLE Post (\
@@ -95,8 +96,9 @@ pre_connection.connect((err) => {
             posted_by ${PROFILE_ID_TYPE}, \
             text ${TEXT_TYPE} NOT NULL, \
             is_repost BOOLEAN, \
-            repost_id ${POST_ID_TYPE}, \
-            like_count ${COUNT_TYPE}, \
+            repost_id ${POST_ID_TYPE} NULL, \
+            like_count ${COUNT_TYPE} NOT NULL DEFAULT 0, \
+            date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, \
             FOREIGN KEY (posted_by) REFERENCES Profile(id), \
             FOREIGN KEY (repost_id) REFERENCES Post(id), \
             PRIMARY KEY (id)\
@@ -107,7 +109,7 @@ pre_connection.connect((err) => {
     
         connection.query(
             `CREATE TABLE PostLike (\
-            post_id ${POST_ID_TYPE}, \
+            post_id ${POST_ID_TYPE} NOT NULL, \
             liked_by ${PROFILE_ID_TYPE} NOT NULL, \
             FOREIGN KEY (post_id) REFERENCES Post(id), \
             FOREIGN KEY (liked_by) REFERENCES Profile(id), \
@@ -115,15 +117,15 @@ pre_connection.connect((err) => {
             )`,
             (err, _) => { throw_error(err) }
         )
-        console.log("Created table 'like'")
+        console.log("Created table 'PostLike'")
     
         connection.query(
             `CREATE TABLE TagProfile (\
-            post_id ${POST_ID_TYPE}, \
-            taggee ${PROFILE_ID_TYPE} NOT NULL, \
+            post_id ${POST_ID_TYPE} NOT NULL, \
+            tagging ${PROFILE_ID_TYPE} NOT NULL, \
             FOREIGN KEY (post_id) REFERENCES Post(id), \
-            FOREIGN KEY (taggee) REFERENCES Profile(id), \
-            PRIMARY KEY (post_id, taggee)\
+            FOREIGN KEY (tagging) REFERENCES Profile(id), \
+            PRIMARY KEY (post_id, tagging)\
             )`,
             (err, _) => { throw_error(err) }
         )
