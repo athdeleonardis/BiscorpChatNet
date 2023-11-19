@@ -3,19 +3,11 @@ import securitySHA256 from '../util/security';
 import loadingIcon from '../assets/loading-icon.png'
 import { NameChecker, PasswordChecker, UsernameChecker } from '../util/string_checking';
 
+import ErrorMessages from './ErrorMessages';
+
 const passwordChecker = new PasswordChecker(7, `~!@#$%^&*()-_=+[{]}\|;:'",<.>/?`)
 const usernameChecker = new UsernameChecker(4, 20, `-_.`)
 const nameChecker = new NameChecker(50)
-
-function ErrorMessages({text}) {
-  return (
-    <ul className="ErrorMessages">
-      {text.trim().split("\n").map((line, index) => (
-        <li key={index}>{line}</li>
-      ))}
-    </ul>
-  )
-}
 
 function CreateProfile() {
   // Form entries

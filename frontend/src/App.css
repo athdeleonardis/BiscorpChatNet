@@ -5,6 +5,8 @@ table, th, td {
   border-collapse: collapse;
 }
 
+/* Section(Navigation) */
+
 nav#Navigation ul {
   list-style-type: none;
   margin: 0;
@@ -37,6 +39,8 @@ nav#Navigation ul li a:hover {
   padding: 16px;
 }
 
+/* Section(CreateProfile) */
+
 div#CreateProfile form label {
   display: block;
   padding-top: 5px;
@@ -57,4 +61,10 @@ div#CreateProfile img.LoadingIcon {
   to {
     transform: rotate(360deg)
   }
+}
+
+/* Section(Login) */
+
+div#Login form label {
+  display: block
 }
