@@ -155,11 +155,14 @@ export class PasswordChecker extends StringCheckMulti {
     super.addCheck(new StringContainsUppercase())
     super.addCheck(new StringContainsInteger())
     super.addCheck(new StringContainsSpecialChar(special_chars))
+    this.instance = null
   }
   
   check(str, res) {
     super.check(str, res)
   }
+
+
 }
 
 export class UsernameChecker extends StringCheckMulti {
@@ -188,5 +191,9 @@ export class NameChecker extends StringCheckMulti {
   }
 }
 
+
+export const usernameCheckerInstance =  new UsernameChecker(4, 20, `-_.`)
+export const nameCheckerInstance =  new NameChecker(50)
+export const passwordCheckerInstance = new PasswordChecker(7, `~!@#$%^&*()-_=+[{]}\|;:'",<.>/?`)
 
 export default {}

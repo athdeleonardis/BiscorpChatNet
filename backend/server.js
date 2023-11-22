@@ -37,7 +37,7 @@ app.get('/postfeed/:id', (req, res) => {
 app.get('/create-profile/:username&:name&:password&:isprivate', (req, res) => {
   console.log(req.url)
   const username = req.params.username
-  const name = req.params.name
+  const name = req.params.name === "." ? '' : req.params.name
   const password_hash = req.params.password
   const is_private = req.params.isprivate === 'false' ? '0' : '1'
   const values = [[username, name, password_hash, is_private]]
@@ -46,6 +46,19 @@ app.get('/create-profile/:username&:name&:password&:isprivate', (req, res) => {
   db.query(sql_query, values, (err, data) => {
     if (err) return res.json(err);
     return res.json(data)
+  })
+})
+
+app.get('/profile-matches/:username', (req, res) => {
+  const username = req.params.username
+  const sql_query = `SELECT username,password FROM profile WHERE username='${username}' AND is_deleted=0`
+  db.query(sql_query, (err, data) => {
+    if (err) return res.json(err)
+    if (data && data.length > 0) {
+      let profile_data = data[0]
+      return res.json({...profile_data, exists: true})
+    }
+    return res.json({exists: false})
   })
 })
 
