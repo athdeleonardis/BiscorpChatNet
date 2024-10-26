@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import biscorpLogo from '../public/logo.gif'
+import biscorpLogo from './assets/logo.gif'
 import './App.css'
 
 function App() {
