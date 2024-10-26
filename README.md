@@ -23,3 +23,13 @@ In the folder 'backend/',
 In the folder 'backend/',
 1. Run `npm run build`
 2. Run `npm run start`
+
+## Frontend Setup
+
+In the folder 'frontend/',
+1. Run `npm install`
+
+## Frontend Development Startup
+
+In the folder 'frontend/',
+1. Run `npm run dev`
