@@ -1,5 +1,3 @@
-import { stringify } from "querystring";
-
 let idCount: number = 0;
 
 type UserBackend = {
