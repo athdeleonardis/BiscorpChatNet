@@ -3,6 +3,7 @@ import { FormatChecker, checkFormatIsObject, checkFormatIsString } from "../../.
 import { requestBodyFormatMiddleware } from "./requestBodyFormatMiddleware";
 import { UserFrontend } from "../database";
 import { databaseCreateUser, databaseGetUserFromUserId, databaseGetUserFromUsername } from "../database";
+import { passwordHashGenerate, passwordHashVerify } from "../security/password";
 
 export default function requestsMountUsers(app: Express) {
     requestsUsersPost(app);
@@ -23,12 +24,18 @@ function requestsUsersPost(app: Express) {
     app.post("/users", requestBodyFormatMiddleware(checkFormatUsersPost), (req: Request, res: Response) => {
         const username = req.body.username;
         const password = req.body.password;
-        const user: UserFrontend | null = databaseCreateUser(username, password);
-        if (user === null) {
-            res.sendStatus(403);
-            return;
-        }
-        res.json(user);
+        passwordHashGenerate(password)
+            .then((passwordHash) => {
+                const user: UserFrontend | null = databaseCreateUser(username, passwordHash);
+                if (user === null) {
+                    res.sendStatus(403);
+                    return;
+                }
+                res.json(user);
+            })
+            .catch((error) => {
+                res.sendStatus(500);
+            });
     });
 }
 

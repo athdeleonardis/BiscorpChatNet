@@ -7,7 +7,7 @@
     "build": "npx tsc",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --import=tsx test/security/test-password.ts"
   },
   "keywords": [],
   "author": "",
@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
-    "@types/node": "^22.8.1",
+    "@types/node": "^22.15.21",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3"
   }
