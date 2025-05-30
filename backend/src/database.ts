@@ -1,3 +1,5 @@
+import { passwordHashVerify } from "./security/password";
+
 let idCount: number = 0;
 
 type UserBackend = {
@@ -112,6 +114,16 @@ export function databaseGetUserFromUsername(username: string): UserFrontend | nu
     const user = users.find(user => user.username === username);
     if (user == undefined)
         return null;
+    return convertUserBackendToFrontend(user);
+}
+
+export function databaseGetUserFromUsernamePassword(username: string, password: string): UserFrontend | null {
+    const user = users.find(user => user.username === username);
+    if (user == undefined)
+        return null;
+    if (!passwordHashVerify(password, user.password)) {
+        return null;
+    }
     return convertUserBackendToFrontend(user);
 }
 
