@@ -1,11 +1,19 @@
 export type FormatChecker = (input: any) => boolean;
 
+export function checkFormatIs(value: any): FormatChecker {
+    return (input: any) => { return input === value };
+}
+
 export function checkFormatIsString(input: any): boolean {
     return typeof input === "string";
 }
 
 export function checkFormatIsNumber(input: any): boolean {
     return typeof input === "number";
+}
+
+export function checkFormatIsBoolean(input: any): boolean {
+    return typeof input === "boolean";
 }
 
 export function checkFormatIsObject(formatObject: { [index: string]: FormatChecker }): FormatChecker {

@@ -1,16 +1,13 @@
-import { passwordHashVerify } from "./security/password";
+import { Models } from "../../common/src/models";
+import { passwordHashGenerate, passwordHashVerify } from "./security/password";
 
 let idCount: number = 0;
 
 type UserBackend = {
     id: string,
     username: string,
-    password: string
-};
-
-export type UserFrontend = {
-    id: string,
-    username: string
+    password: string,
+    isPrivate: boolean
 };
 
 type PostBackend = {
@@ -19,13 +16,6 @@ type PostBackend = {
     replyId: string | null,
     content: string,
 }
-
-export type PostFrontend = {
-    id: string,
-    userId: string,
-    replyId: string | null,
-    content: string,
-};
 
 type UserFollowsBackend = {
     userId: string
@@ -36,12 +26,20 @@ const users: UserBackend[] = [
     {
         id: "abcd",
         username: "andrew",
-        password: "password1"
+        password: await passwordHashGenerate("password1"),
+        isPrivate: false
     },
     {
         id: "abc",
         username: "amity",
-        password: "password2"
+        password: await passwordHashGenerate("password2"),
+        isPrivate: true
+    },
+    {
+        id: "id_stephen",
+        username: "stephen",
+        password: await passwordHashGenerate("password_stephen"),
+        isPrivate: false
     }
 ];
 
@@ -71,23 +69,23 @@ const follows: UserFollowsBackend[] = [
     }
 ];
 
-function convertUserBackendToFrontend(user: UserBackend): UserFrontend {
+function convertUserBackendToFrontend(user: UserBackend): Models.User {
     const user1 = structuredClone(user);
     const user2 = user1 as any;
     user2.password = undefined;
-    const user3 = user2 as UserFrontend;
+    const user3 = user2 as Models.User;
     return user3;
 }
 
-function convertPostBackendToFrontend(post: PostBackend): PostFrontend {
-    return structuredClone(post) as PostFrontend;
+function convertPostBackendToFrontend(post: PostBackend): Models.Post {
+    return structuredClone(post) as Models.Post;
 }
 
 //
 // User
 //
 
-export function databaseCreateUser(username: string, passwordHash: string): UserFrontend | null {
+export function databaseCreateUser(username: string, passwordHash: string): Models.User | null {
     const existingUser = users.find(user => {
         return user.username === username
     });
@@ -96,42 +94,47 @@ export function databaseCreateUser(username: string, passwordHash: string): User
     const user: UserBackend = {
         id: idCount.toString(),
         username: username,
-        password: passwordHash
+        password: passwordHash,
+        isPrivate: false
     }
     idCount += 1;
     users.push(user);
     return convertUserBackendToFrontend(user);
 }
 
-export function databaseGetUserFromUserId(userId: string): UserFrontend | null {
+export function databaseGetUserFromUserId(userId: string): Models.User | null {
     const user: UserBackend | undefined = users.find(user => user.id === userId);
     if (user == undefined)
         return null;
     return convertUserBackendToFrontend(user);
 }
 
-export function databaseGetUserFromUsername(username: string): UserFrontend | null {
+export function databaseGetUserFromUsername(username: string): Models.User | null {
     const user = users.find(user => user.username === username);
     if (user == undefined)
         return null;
     return convertUserBackendToFrontend(user);
 }
 
-export function databaseGetUserFromUsernamePassword(username: string, password: string): UserFrontend | null {
+export async function databaseGetUserFromUsernamePassword(username: string, password: string): Promise<Models.User | null> {
     const user = users.find(user => user.username === username);
-    if (user == undefined)
+    if (user === undefined)
         return null;
-    if (!passwordHashVerify(password, user.password)) {
+    try {
+        if (await passwordHashVerify(password, user.password)) {
+            return convertUserBackendToFrontend(user);
+        }
+        return null;
+    } catch {
         return null;
     }
-    return convertUserBackendToFrontend(user);
 }
 
 //
 // Post
 //
 
-export function databaseCreatePost(userId: string, content: string): PostFrontend | null {
+export function databaseCreatePost(userId: string, content: string): Models.Post | null {
     const user = users.find(user => user.id === userId);
     if (user === undefined)
         return null;
@@ -161,21 +164,21 @@ export function databaseCreateReply(userId: string, content: string, replyId: st
     return reply;
 }
 
-export function databaseGetPostFromPostId(postId: string): PostFrontend | null {
+export function databaseGetPostFromPostId(postId: string): Models.Post | null {
     const post: PostBackend | undefined = posts.find(post => post.id === postId);
     if (post == undefined)
         return null;
     return convertPostBackendToFrontend(post);
 }
 
-export function databaseGetPostsFromUserId(userId: string): PostFrontend[] | null {
+export function databaseGetPostsFromUserId(userId: string): Models.Post[] | null {
     const user = users.find(user => user.id === userId);
     if (user == undefined)
         return null;
     return posts.filter(post => post.userId === userId).map(post => convertPostBackendToFrontend(post));
 }
 
-export function databaseGetRepliesFromPostId(postId: string): PostFrontend[] | null {
+export function databaseGetRepliesFromPostId(postId: string): Models.Post[] | null {
     const post = posts.find(post => post.id === postId);
     if (post === undefined)
         return null;
@@ -185,6 +188,13 @@ export function databaseGetRepliesFromPostId(postId: string): PostFrontend[] | n
 //
 // Follows
 //
+
+export function databaseCheckUserFollowers(userId: string, followerId: string): boolean {
+    if (userId == followerId)
+        return true;
+    const follow = follows.find(follow => follow.userId == userId && follow.followerId == followerId);
+    return follow !== undefined;
+}
 
 export function databaseCreateFollow(userId: string, followingId: string): boolean | null {
     const user = users.find(user => user.id == userId);
