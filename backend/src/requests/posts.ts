@@ -1,5 +1,5 @@
 import { Express, Request, Response } from "express";
-import { databaseCheckUserFollowers, databaseCreatePost, databaseCreateReply, databaseGetPostFromPostId, databaseGetPostsFromUserId, databaseGetRepliesFromPostId, databaseGetUserFromUserId } from "../database";
+import Database from "../database/database";
 import { Models } from "../../../common/src/models";
 import { requestsMiddlewareTokensVerify, requestsMiddlewareTokensVerifyUnrequired } from "./tokens";
 import { checkFormatIsObject, checkFormatIsString, FormatChecker } from "../../../common/src/checkFormat";
@@ -25,14 +25,15 @@ function requestsPostsPost(app: Express) {
     app.post("/posts",
         requestsMiddlewareTokensVerify(Models.formatCheckerUser),
         requestHandlerBodyFormat(formatCheckerBodyPost),
-        (req: Request, res: Response) => {
+        async (req: Request, res: Response<Models.Post>) => {
             const user = req.tokenData as Models.User;
             const content = req.body.content;
-            const post = databaseCreatePost(user.id, content);
-            if (post === null) {
-                res.sendStatus(403);
+
+            const postQueryResponse = await Database.queries().createPost(user.id, content);
+            if (Database.onNonSuccess(res, 403, postQueryResponse))
                 return;
-            }
+            const post = Database.getData(postQueryResponse);
+            
             res.json(post);
         }
     );
@@ -47,15 +48,16 @@ function requestsPostsPostReply(app: Express) {
         requestsMiddlewareTokensVerify(Models.formatCheckerUser),
         requestHandlerParamsFormat(formatCheckerParamsReply),
         requestHandlerBodyFormat(formatCheckerBodyPost),
-        (req: Request, res: Response) => {
+        async (req: Request, res: Response<Models.Post>) => {
             const user = req.tokenData as Models.User;
             const replyId = req.params.id as string;
             const content = req.body.content as string;
-            const post = databaseCreateReply(user.id, content, replyId);
-            if (post === null) {
-                res.sendStatus(404);
+
+            const postQueryResponse = await Database.queries().createReply(user.id, content, replyId);
+            if (Database.onNonSuccess(res, 404, postQueryResponse))
                 return;
-            }
+            const post = Database.getData(postQueryResponse);
+            
             res.json(post);
         }
     );
@@ -66,58 +68,70 @@ function requestsPostsPostReply(app: Express) {
 //
 
 function requestsPostsGetFromId(app: Express) {
-    app.get("/posts/id/:id", (req: Request, res: Response) => {
-        const post: Models.Post | null = databaseGetPostFromPostId(req.params.id);
-        if (post === null) {
-            res.sendStatus(404);
-            return;
+    app.get("/posts/id/:id",
+        async (req: Request, res: Response<Models.Post>) => {
+            const postId = req.params.id;
+
+            const postQueryResponse = await Database.queries().getPost(postId);
+            if (Database.onNonSuccess(res, 404, postQueryResponse))
+                return;
+            const post = Database.getData(postQueryResponse);
+            
+            res.json(post);
         }
-        res.json(post);
-    });
+    );
 }
 
 function requestsPostsGetFromUserId(app: Express) {
     app.get("/posts/user/:userId",
         requestsMiddlewareTokensVerifyUnrequired(Models.formatCheckerUser),
-        (req: Request, res: Response) => {
+        async (req: Request, res: Response<Models.Post[]>) => {
             const userId = req.params.userId;
             const requestingUser = req.tokenData as Models.User | undefined;
 
-            const user = databaseGetUserFromUserId(userId);
-            if (user === null) {
-                res.sendStatus(404);
+            const userQueryResponse = await Database.queries().getUser(userId);
+            if (Database.onNonSuccess(res, 404, userQueryResponse))
                 return;
-            }
+            const user = Database.getData(userQueryResponse);
 
             if (user.isPrivate) {
                 if (requestingUser === undefined) {
                     res.sendStatus(403);
                     return;
                 }
-                const following = databaseCheckUserFollowers(userId, requestingUser.id);
-                if (!following) {
+
+                const isFollowingQueryResponse = await Database.queries().checkFollowers(userId, requestingUser.id);
+                if (Database.onNonSuccess(res, 404, isFollowingQueryResponse))
+                    return;
+                const isFollowing = Database.getData(isFollowingQueryResponse);
+
+                if (!isFollowing) {
                     res.sendStatus(403);
                     return;
                 }
             }
 
-            const posts: Models.Post[] | null = databaseGetPostsFromUserId(req.params.userId);
-            if (posts === null) {
-                res.sendStatus(404);
+            const postsQueryResponse = await Database.queries().getUserPosts(req.params.userId);
+            if (Database.onNonSuccess(res, 404, postsQueryResponse))
                 return;
-            }
+            const posts = Database.getData(postsQueryResponse);
+            
             res.json(posts);
         }
     );
 }
 
 function requestsPostsGetFromReplyId(app: Express) {
-    app.get("/posts/replies/:postId", (req: Request, res: Response) => {
-        const replies: Models.Post[] | null = databaseGetRepliesFromPostId(req.params.postId);
-        if (replies === null) {
-            res.sendStatus(404);
-            return;
+    app.get("/posts/replies/:replyId",
+        async (req: Request, res: Response<Models.Post[]>) => {
+            const replyId = req.params.replyId;
+            
+            const repliesQueryResponse = await Database.queries().getPostReplies(replyId);
+            if (Database.onNonSuccess(res, 404, repliesQueryResponse))
+                return;
+            const replies = Database.getData(repliesQueryResponse);
+
+            res.json(replies);
         }
-        res.json(replies);
-    });
+    );
 }

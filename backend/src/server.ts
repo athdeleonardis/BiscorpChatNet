@@ -1,9 +1,13 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import requestsMount from "./requests/requests";
+import Database from "./database/database";
+import databaseInterfaceMock from "./database/interfaces/mock-interface";
 
 dotenv.config();
 const port = process.env.PORT || 3000;
+
+Database.setInterface(databaseInterfaceMock);
 
 const app: Express = express();
 app.use(express.json());

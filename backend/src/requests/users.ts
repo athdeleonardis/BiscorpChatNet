@@ -1,7 +1,8 @@
 import { Express, Request, Response } from "express";
 import { FormatChecker, checkFormatIsObject, checkFormatIsString } from "../../../common/src/checkFormat";
 import { requestHandlerBodyFormat } from "./middlewares";
-import { databaseCreateUser, databaseGetUserFromUserId, databaseGetUserFromUsername } from "../database";
+import Database from "../database/database";
+import { Models } from "../../../common/src/models";
 import { passwordHashGenerate } from "../security/password";
 import { tokenGenerate } from "../security/token";
 
@@ -23,21 +24,22 @@ const checkFormatUsersPost: FormatChecker = checkFormatIsObject({
 function requestsUsersPost(app: Express) {
     app.post("/users",
         requestHandlerBodyFormat(checkFormatUsersPost),
-        (req: Request, res: Response) => {
+        (req: Request, res: Response<string>) => {
             const username = req.body.username as string;
             const password = req.body.password as string;
             passwordHashGenerate(password)
-                .then((passwordHash) => {
-                    const user = databaseCreateUser(username, passwordHash);
-                    if (user === null) {
-                        res.sendStatus(403);
+                .then(passwordHash => Database.queries().createUser(username, passwordHash))
+                .then(userQueryResponse => {
+                    if (Database.onNonSuccess(res, 403, userQueryResponse))
                         return;
-                    }
+                    const user = Database.getData(userQueryResponse);
+
                     const token = tokenGenerate(user);
                     if (token === null) {
                         res.sendStatus(500);
                         return;
                     }
+                    
                     res.json(token);
                 })
                 .catch((error) => {
@@ -53,23 +55,23 @@ function requestsUsersPost(app: Express) {
 //
 
 function requestsUsersGetFromId(app: Express) {
-    app.get("/users/id/:id", (req: Request, res: Response) => {
-        const user = databaseGetUserFromUserId(req.params.id);
-        if (user === null) {
-            res.sendStatus(404);
+    app.get("/users/id/:id", async (req: Request, res: Response<Models.User>) => {
+        const userId = req.params.id;
+        const userQueryResponse = await Database.queries().getUser(userId);
+        if (Database.onNonSuccess(res, 404, userQueryResponse))
             return;
-        }
+        const user = Database.getData(userQueryResponse);
         res.json(user);
     });
 }
 
 function requestsUsersGetFromUsername(app: Express) {
-    app.get("/users/username/:username", (req: Request, res: Response) => {
-        const user = databaseGetUserFromUsername(req.params.username);
-        if (user === null) {
-            res.sendStatus(404);
+    app.get("/users/username/:username", async (req: Request, res: Response<Models.User>) => {
+        const username = req.params.username;
+        const userQueryResponse = await Database.queries().getUserFromUsername(username);
+        if (Database.onNonSuccess(res, 404, userQueryResponse))
             return;
-        }
+        const user = Database.getData(userQueryResponse);
         res.json(user);
     });
 }

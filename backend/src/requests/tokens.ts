@@ -1,5 +1,5 @@
 import { Express, Request, Response, RequestHandler, NextFunction } from "express"
-import { databaseGetUserFromUsernamePassword } from "../database"
+import Database from "../database/database"
 import { FormatChecker, checkFormatIsObject, checkFormatIsString, checkFormatAll, checkFormatStringPrefix } from "../../../common/src/checkFormat"
 import { requestHandlerBodyFormat } from "./middlewares";
 import { tokenGenerate, tokenVerify } from "../security/token";
@@ -16,14 +16,14 @@ const checkFormatTokensPostGenerate: FormatChecker = checkFormatIsObject({
 function requestsTokensPostGenerate(app: Express) {
     app.post("/tokens/generate",
         requestHandlerBodyFormat(checkFormatTokensPostGenerate),
-        async (req: Request, res: Response) => {
+        async (req: Request, res: Response<string>) => {
             const username = req.body.username;
             const password = req.body.password;
-            const user = await databaseGetUserFromUsernamePassword(username, password);
-            if (user === null) {
-                res.sendStatus(401);
+            const userQueryResponse = await Database.queries().getUserFromUsernameAndPassword(username, password);
+            if (Database.onNonSuccess(res, 401, userQueryResponse))
                 return;
-            }
+            const user = Database.getData(userQueryResponse);
+
             const token = tokenGenerate(user);
             if (token === null) {
                 res.sendStatus(500);

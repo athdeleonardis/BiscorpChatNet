@@ -34,10 +34,9 @@ export namespace Models {
         content: checkFormatIsString
     });
 
-    export type Profile = {
-        user: User,
-        posts: Post[] | null,
-        followers: User[] | null
+    export type Follower = {
+        userId: string,
+        followerId: string
     };
 }
 

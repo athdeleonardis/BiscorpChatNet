@@ -1,5 +1,7 @@
 import { test, expect } from "@jest/globals";
 import JSONFetcher from "../../../../common/src/jsonFetcher";
+import { checkFormatIsArray } from "../../../../common/src/checkFormat";
+import { Models } from "../../../../common/src/models";
 
 const jsonFetcher = new JSONFetcher("http://localhost:4000");
 
@@ -9,6 +11,8 @@ type TestFormat = {
     requestingUser?: { username: string, password: string},
     expectedStatus: number
 };
+
+const formatCheckerUsersArray = checkFormatIsArray(Models.formatCheckerUser);
 
 const tests: TestFormat[] = [
     {
@@ -76,4 +80,8 @@ tests.forEach(testParameters => test(testParameters.name, async () => {
     const userId = testParameters.userId;
     const followersRequest = await jsonFetcher.get(`/followers/${userId}`, token);
     expect(followersRequest.status).toBe(testParameters.expectedStatus);
+    if (testParameters.expectedStatus === 200) {
+        const followers = await followersRequest.json();
+        expect(formatCheckerUsersArray(followers)).toBeTruthy();
+    }
 }));

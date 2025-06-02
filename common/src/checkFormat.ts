@@ -28,6 +28,18 @@ export function checkFormatIsObject(formatObject: { [index: string]: FormatCheck
     }
 }
 
+export function checkFormatIsArray(format: FormatChecker): FormatChecker {
+    return (input: any) => {
+        if (!Array.isArray(input))
+            return false;
+        for (const element of input) {
+            if (!format(element))
+                return false;
+        }
+        return true;
+    }
+}
+
 export function checkFormatAll(formats: FormatChecker[]): FormatChecker {
     return (input: any) => {
         for (const format of formats) {
