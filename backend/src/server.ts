@@ -1,23 +1,42 @@
 import express, { Express, Request, Response } from "express";
+import { createHttpsServer, requestMiddlewareHttpsRedirect } from "./security/https";
 import dotenv from "dotenv";
 import requestsMount from "./requests/requests";
 import Database from "./database/database";
-import databaseInterfaceMock from "./database/interfaces/mock-interface";
+import databaseInterfaceMock from "./database/interfaces/mockInterface";
+
+//
+// Initialize constants
+//
 
 dotenv.config();
-const port = process.env.PORT || 3000;
+const port_https = process.env.PORT_HTTPS as string;
+
+//
+// Initialize database
+//
 
 Database.setInterface(databaseInterfaceMock);
 
-const app: Express = express();
-app.use(express.json());
+//
+// Initialize HTTPS server
+//
 
-app.get("/", (req: Request, res: Response) => {
+const appHttps: Express = express();
+appHttps.use(express.json());
+appHttps.use(requestMiddlewareHttpsRedirect);
+
+appHttps.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server");
 });
 
-requestsMount(app);
+requestsMount(appHttps);
 
-app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
+//
+// Run both servers
+//
+
+const httpsServer = createHttpsServer(appHttps);
+httpsServer.listen(port_https, () => {
+  console.log(`[https server]: Listening at 'https://localhost:${port_https}'.`);
 });

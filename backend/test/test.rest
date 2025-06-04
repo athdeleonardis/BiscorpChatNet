@@ -1,10 +1,10 @@
 ### Base Test
 
-GET http://localhost:4000/
+GET https://localhost/
 
 ### User Id Test
 
-GET http://localhost:4000/users/id/abcd
+GET https://localhost/users/id/abcd
 
 ### User Username Test
 
@@ -12,7 +12,7 @@ GET http://localhost:4000/users/username/andrew
 
 ### User Create Test
 
-POST http://localhost:4000/users
+POST https://localhost:4000/users
 Content-Type: application/json
 
 {

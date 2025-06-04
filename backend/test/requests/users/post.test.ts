@@ -1,12 +1,10 @@
 import { test, expect } from "@jest/globals";
-import JSONFetcher from "../../../../common/src/jsonFetcher";
-
-const jsonFetcher = new JSONFetcher("http://localhost:4000");
+import testJsonFetcher from "../requests";
 
 test('user posted', async () => {
     const username = "TestUsername0";
     const password = "TestPassword0";
-    const userPostRequest = await jsonFetcher.post("/users", {
+    const userPostRequest = await testJsonFetcher.post("/users", {
         username: username,
         password: password
     });
@@ -15,7 +13,7 @@ test('user posted', async () => {
 
 test('user no password', async () => {
     const username = "TestUsername1";
-    const userPostRequest = await jsonFetcher.post("/users", {
+    const userPostRequest = await testJsonFetcher.post("/users", {
         username: username
     });
     expect(userPostRequest.status).toBe(422);
@@ -23,13 +21,13 @@ test('user no password', async () => {
 
 test('user no username', async () => {
     const password = "TestPassword2";
-    const userPostRequest = await jsonFetcher.post("/users", {
+    const userPostRequest = await testJsonFetcher.post("/users", {
         password: password
     });
     expect(userPostRequest.status).toBe(422);
 });
 
 test('user no body', async () => {
-    const userPostRequest = await jsonFetcher.post("/users", undefined);
+    const userPostRequest = await testJsonFetcher.post("/users", undefined);
     expect(userPostRequest.status).toBe(422);
 });

@@ -16,6 +16,7 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "https": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
     "models": "file:../models"
   },

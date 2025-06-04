@@ -1,9 +1,7 @@
 import { test, expect } from "@jest/globals";
-import JSONFetcher from "../../../../common/src/jsonFetcher";
 import { checkFormatIsArray } from "../../../../common/src/checkFormat";
 import { Models } from "../../../../common/src/models";
-
-const jsonFetcher = new JSONFetcher("http://localhost:4000");
+import testJsonFetcher from "../requests";
 
 type TestFormat = {
     name: string
@@ -72,13 +70,13 @@ tests.forEach(testParameters => test(testParameters.name, async () => {
     const requestingUser = testParameters.requestingUser;
     let token: string | undefined = undefined;
     if (requestingUser) {
-        const tokenRequest = await jsonFetcher.post("/tokens/generate", requestingUser);
+        const tokenRequest = await testJsonFetcher.post("/tokens/generate", requestingUser);
         expect(tokenRequest.status).toBe(200);
         token = await tokenRequest.json();
     }
 
     const userId = testParameters.userId;
-    const followersRequest = await jsonFetcher.get(`/followers/${userId}`, token);
+    const followersRequest = await testJsonFetcher.get(`/followers/${userId}`, token);
     expect(followersRequest.status).toBe(testParameters.expectedStatus);
     if (testParameters.expectedStatus === 200) {
         const followers = await followersRequest.json();

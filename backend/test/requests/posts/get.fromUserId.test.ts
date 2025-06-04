@@ -1,7 +1,5 @@
 import { test, expect } from "@jest/globals";
-import JSONFetcher from "../../../../common/src/jsonFetcher";
-
-const jsonFetcher = new JSONFetcher("http://localhost:4000");
+import testJsonFetcher from "../requests";
 
 type TestFormat = {
     name: string,
@@ -68,12 +66,12 @@ tests.forEach(testParameters => test(testParameters.name, async () => {
     const requestingUser = testParameters.requestingUser;
     let token: string | undefined = undefined;
     if (requestingUser) {
-        const tokenRequest = await jsonFetcher.post("/tokens/generate", requestingUser);
+        const tokenRequest = await testJsonFetcher.post("/tokens/generate", requestingUser);
         expect(tokenRequest.status).toBe(200);
         token = await tokenRequest.json() as string;
     }
 
     const userId = testParameters.userId;
-    const postsRequest = await jsonFetcher.get(`/posts/user/${userId}`, token);
+    const postsRequest = await testJsonFetcher.get(`/posts/user/${userId}`, token);
     expect(postsRequest.status).toBe(testParameters.expectedStatus);
 }));

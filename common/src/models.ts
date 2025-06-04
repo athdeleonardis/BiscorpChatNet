@@ -38,6 +38,11 @@ export namespace Models {
         userId: string,
         followerId: string
     };
+
+    export const formatCheckerFollower = checkFormatIsObject({
+        userId: checkFormatIsString,
+        followerId: checkFormatIsString
+    });
 }
 
 

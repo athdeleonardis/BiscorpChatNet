@@ -1,7 +1,5 @@
 import { test, expect } from "@jest/globals";
-import JSONFetcher from "../../../../common/src/jsonFetcher";
-
-const jsonFetcher = new JSONFetcher("http://localhost:4000");
+import testJsonFetcher from "../requests";
 
 type TestFormat = {
     name: string,
@@ -24,6 +22,6 @@ const tests: TestFormat[] = [
 
 tests.forEach(testParameters => test(testParameters.name, async () => {
     const postId = testParameters.postId;
-    const postRequest = await jsonFetcher.get(`/posts/id/${postId}`);
+    const postRequest = await testJsonFetcher.get(`/posts/id/${postId}`);
     expect(postRequest.status).toBe(testParameters.expectedStatus);
 }));
