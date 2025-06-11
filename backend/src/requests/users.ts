@@ -1,15 +1,17 @@
 import { Express, Request, Response } from "express";
-import { FormatChecker, checkFormatIsObject, checkFormatIsString } from "../../../common/src/checkFormat";
+import { FormatChecker, checkFormatAnyOf, checkFormatEquals, checkFormatIsBoolean, checkFormatIsObject, checkFormatIsString } from "../../../common/src/checkFormat";
 import { requestHandlerBodyFormat } from "./middlewares";
 import Database from "../database/database";
 import { Models } from "../../../common/src/models";
 import { passwordHashGenerate } from "../security/password";
 import { tokenGenerate } from "../security/token";
+import { requestsMiddlewareTokensVerify } from "./tokens";
 
 export default function requestsMountUsers(app: Express) {
     requestsUsersPost(app);
     requestsUsersGetFromId(app);
     requestsUsersGetFromUsername(app);
+    requestsUsersPatchPrivacy(app);
 }
 
 //
@@ -74,4 +76,33 @@ function requestsUsersGetFromUsername(app: Express) {
         const user = Database.getData(userQueryResponse);
         res.json(user);
     });
+}
+
+//
+// Patches
+//
+
+const checkFormatUsersPatchPrivacy = checkFormatIsObject({
+    isPrivate: checkFormatAnyOf([
+        checkFormatEquals("true"),
+        checkFormatEquals("false")
+    ])
+});
+
+function requestsUsersPatchPrivacy(app: Express) {
+    app.patch("/users/privacy/:id",
+        requestsMiddlewareTokensVerify(Models.formatCheckerUser),
+        requestHandlerBodyFormat(checkFormatUsersPatchPrivacy),
+        async (req: Request, res: Response) => {
+            const user = req.tokenData as Models.User;
+            const userId = user.id;
+            const isPrivate = req.body.isPrivate as "true" | "false";
+            const _isPrivate = isPrivate == "true";
+
+            const queryResponse = await Database.queries().setUserPrivacy(userId, _isPrivate);
+            if (Database.onNonSuccess(res, 404, queryResponse))
+                return;
+            res.sendStatus(204);
+        }
+    );
 }

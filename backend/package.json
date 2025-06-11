@@ -7,7 +7,7 @@
     "build": "npx tsc",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "test": "jest"
+    "test": "tsx test/data/mongodbLoadTestData.ts && jest"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +18,8 @@
     "express": "^4.21.1",
     "https": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
-    "models": "file:../models"
+    "models": "file:../models",
+    "mongodb": "^6.17.0"
   },
   "devDependencies": {
     "@jest/globals": "^30.0.0-beta.3",
@@ -27,6 +28,7 @@
     "@types/node": "^22.15.21",
     "jest": "^29.7.0",
     "ts-jest": "^29.3.4",
+    "ts-node": "^10.9.2",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3"
   }

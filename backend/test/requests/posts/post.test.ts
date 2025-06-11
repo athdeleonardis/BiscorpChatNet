@@ -1,21 +1,23 @@
 import { expect, test } from "@jest/globals";
 import { Models } from "../../../../common/src/models";
 import testJsonFetcher from "../requests";
+import { loadTestData } from "../../data/testData";
+
+const testData = loadTestData();
 
 test('post create', async () => {
-    const userId = "abcd";
-    const username = "andrew";
-    const password = "password1";
-    const tokenRequest = await testJsonFetcher.post("/tokens/generate", {
-        username: username,
-        password: password
-    });
+    const userId = testData.users[0].id;
+    const username = testData.users[0].username;
+    const password = testData.users[0].password;
+    const tokenRequest = await testJsonFetcher.post("/tokens/generate", { username, password });
+
     expect(tokenRequest.status).toBe(200);
     const token = await tokenRequest.json() as string;
     
-    const content = "hey hello hey";
+    const content = "Test content 1";
     const postRequest = await testJsonFetcher.post("/posts", { content: content }, token);
     expect(postRequest.status).toBe(200);
+
     const post = await postRequest.json() as Models.Post;
     expect(Models.formatCheckerPost(post)).toBeTruthy();
     expect(post.userId).toEqual(userId);
@@ -23,21 +25,18 @@ test('post create', async () => {
 });
 
 test('post no token', async () => {
-    const content = "hey hello hey";
+    const content = "Test content 2";
     const postRequest = await testJsonFetcher.post("/posts", { content: content });
     expect(postRequest.status).toBe(401);
 });
 
 test('post no content', async () => {
-    const username = "andrew";
-    const password = "password1";
-    const tokenRequest = await testJsonFetcher.post("/tokens/generate", {
-        username: username,
-        password: password
-    });
+    const username = testData.users[0].username;
+    const password = testData.users[0].password;
+    const tokenRequest = await testJsonFetcher.post("/tokens/generate", { username, password });
     expect(tokenRequest.status).toBe(200);
-    const token = await tokenRequest.json() as string;
 
+    const token = await tokenRequest.json() as string;
     const postRequest = await testJsonFetcher.post("/posts", { }, token);
     expect(postRequest.status).toBe(422);
 });

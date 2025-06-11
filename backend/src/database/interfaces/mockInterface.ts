@@ -3,11 +3,15 @@ import { passwordHashGenerate, passwordHashVerify } from "../../security/passwor
 import Database from "../database";
 
 const databaseInterfaceMock: Database.Interface = {
+    // Connection
+    connect: databaseConnect,
+    disconnect: databaseDisconnect,
     // Users
     createUser: databaseCreateUser,
     getUser: databaseGetUserFromUserId,
     getUserFromUsername: databaseGetUserFromUsername,
     getUserFromUsernameAndPassword: databaseGetUserFromUsernamePassword,
+    setUserPrivacy: databaseSetUserPrivacy,
     // Posts
     createPost: databaseCreatePost,
     createReply: databaseCreateReply,
@@ -110,6 +114,18 @@ function convertPostBackendToFrontend(post: PostBackend): Models.Post {
 }
 
 //
+// Connection
+//
+
+function databaseConnect(): Promise<Database.Response<null>> {
+    return new Promise((accept) => { accept(Database.success(null)); });
+}
+
+function databaseDisconnect(): Promise<Database.Response<null>> {
+    return new Promise((accept) => { accept(Database.success(null)); });
+}
+
+//
 // User
 //
 
@@ -172,7 +188,19 @@ function databaseGetUserFromUsernamePassword(username: string, password: string)
             }
             accept(Database.success(convertUserBackendToFrontend(user)));
         })
-        .catch(error => accept(Database.failure()));
+        .catch(error => accept(Database.failure(new Error("Mock interface - Password hash verification failed."))));
+    });
+}
+
+function databaseSetUserPrivacy(userId: string, isPrivate: boolean): Promise<Database.Response<null>> {
+    return new Promise((accept) => {
+        const user = users.find(user => user.id === userId);
+        if (user === undefined) {
+            accept(Database.unallowed());
+            return;
+        }
+        user.isPrivate = isPrivate;
+        accept(Database.success(null));
     });
 }
 

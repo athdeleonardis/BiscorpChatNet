@@ -2,6 +2,9 @@ import { test, expect } from "@jest/globals";
 import { checkFormatIsArray } from "../../../../common/src/checkFormat";
 import { Models } from "../../../../common/src/models";
 import testJsonFetcher from "../requests";
+import { loadTestData } from "../../data/testData";
+
+const testData = loadTestData();
 
 type TestFormat = {
     name: string
@@ -20,47 +23,47 @@ const tests: TestFormat[] = [
     },
     {
         name: 'followers get public user no token',
-        userId: "abcd",
+        userId: testData.users[0].id,
         expectedStatus: 200
     },
     {
         name: 'followers get public user with token',
-        userId: "abcd",
+        userId: testData.users[0].id,
         requestingUser: {
-            username: "amity",
-            password: "password2"
+            username: testData.users[1].username,
+            password: testData.users[1].password
         },
         expectedStatus: 200
     },
     {
         name: 'followers get private user no token',
-        userId: "abc",
+        userId: testData.users[1].id,
         expectedStatus: 403
     },
     {
         name: 'followers get private user with token and following',
-        userId: "abc",
+        userId: testData.users[1].id,
         requestingUser: {
-            username: "andrew",
-            password: "password1"
+            username: testData.users[0].username,
+            password: testData.users[0].password
         },
         expectedStatus: 200
     },
     {
         name: 'followers get private user with token not following',
-        userId: "abc",
+        userId: testData.users[1].id,
         requestingUser: {
-            username: "stephen",
-            password: "password_stephen"
+            username: testData.users[2].username,
+            password: testData.users[2].password
         },
         expectedStatus: 403
     },
     {
         name: 'followers get private user from self',
-        userId: "abc",
+        userId: testData.users[1].id,
         requestingUser: {
-            username: "amity",
-            password: "password2"
+            username: testData.users[1].username,
+            password: testData.users[1].password
         },
         expectedStatus: 200
     }

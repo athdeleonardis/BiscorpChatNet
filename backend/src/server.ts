@@ -3,7 +3,8 @@ import { createHttpsServer, requestMiddlewareHttpsRedirect } from "./security/ht
 import dotenv from "dotenv";
 import requestsMount from "./requests/requests";
 import Database from "./database/database";
-import databaseInterfaceMock from "./database/interfaces/mockInterface";
+import databaseInterface from "./database/interfaces/mongodbInterface";
+import { testWrapperInterface } from "./database/interfaces/testWrapperInterface";
 
 //
 // Initialize constants
@@ -16,7 +17,7 @@ const port_https = process.env.PORT_HTTPS as string;
 // Initialize database
 //
 
-Database.setInterface(databaseInterfaceMock);
+Database.setInterface(testWrapperInterface(databaseInterface));
 
 //
 // Initialize HTTPS server
@@ -32,11 +33,20 @@ appHttps.get("/", (req: Request, res: Response) => {
 
 requestsMount(appHttps);
 
+const httpsServer = createHttpsServer(appHttps);
+
 //
-// Run both servers
+// Run server
 //
 
-const httpsServer = createHttpsServer(appHttps);
-httpsServer.listen(port_https, () => {
-  console.log(`[https server]: Listening at 'https://localhost:${port_https}'.`);
-});
+Database.queries().connect()
+    .then(response => {
+        if (response.status !== Database.ResponseType.Success) {
+            throw new Error('Failed to connect to database.');
+        }
+        console.log('[mongodb]: Connected.');
+
+        httpsServer.listen(port_https, () => {
+            console.log(`[https server]: Listening at 'https://localhost:${port_https}'.`);
+        });
+    });

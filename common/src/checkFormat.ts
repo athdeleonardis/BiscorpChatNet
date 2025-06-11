@@ -4,6 +4,10 @@ export function checkFormatIs(value: any): FormatChecker {
     return (input: any) => { return input === value };
 }
 
+export function checkFormatEquals(value: any): FormatChecker {
+    return (input: any) => { return input == value };
+}
+
 export function checkFormatIsString(input: any): boolean {
     return typeof input === "string";
 }
@@ -48,6 +52,16 @@ export function checkFormatAll(formats: FormatChecker[]): FormatChecker {
         }
         return true;
     };
+}
+
+export function checkFormatAnyOf(formats: FormatChecker[]): FormatChecker {
+    return (input: any) => {
+        for (const format of formats) {
+            if (format(input))
+                return true;
+        }
+        return false;
+    }
 }
 
 export function checkFormatStringPrefix(prefix: string): FormatChecker {

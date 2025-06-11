@@ -50,14 +50,16 @@ function requestsFollowersGetFromUserId(app: Express) {
                     return;
                 }
 
-                const isFollowingQueryResponse = await Database.queries().checkFollowers(userId, tokenUser.id);
-                if (Database.onNonSuccess(res, 404, isFollowingQueryResponse))
-                    return;
-                const isFollowing = Database.getData(isFollowingQueryResponse);
+                if (user.id !== tokenUser.id) {
+                    const isFollowingQueryResponse = await Database.queries().checkFollowers(userId, tokenUser.id);
+                    if (Database.onNonSuccess(res, 404, isFollowingQueryResponse))
+                        return;
+                    const isFollowing = Database.getData(isFollowingQueryResponse);
 
-                if (!isFollowing) {
-                    res.sendStatus(403);
-                    return;
+                    if (!isFollowing) {
+                        res.sendStatus(403);
+                        return;
+                    }
                 }
             }
 

@@ -1,5 +1,8 @@
 import { test, expect } from "@jest/globals";
 import testJsonFetcher from "../requests";
+import { loadTestData } from "../../data/testData";
+
+const testData = loadTestData();
 
 type TestParameters = {
     name: string,
@@ -15,7 +18,7 @@ const tests: TestParameters[] = [
     },
     {
         name: "posts get replies",
-        replyId: "abcde",
+        replyId: testData.posts[0].id,
         expectedStatus: 200
     }
 ];

@@ -53,7 +53,7 @@ function requestsPostsPostReply(app: Express) {
             const replyId = req.params.id as string;
             const content = req.body.content as string;
 
-            const postQueryResponse = await Database.queries().createReply(user.id, content, replyId);
+            const postQueryResponse = await Database.queries().createReply(user.id, replyId, content);
             if (Database.onNonSuccess(res, 404, postQueryResponse))
                 return;
             const post = Database.getData(postQueryResponse);
@@ -100,18 +100,20 @@ function requestsPostsGetFromUserId(app: Express) {
                     return;
                 }
 
-                const isFollowingQueryResponse = await Database.queries().checkFollowers(userId, requestingUser.id);
-                if (Database.onNonSuccess(res, 404, isFollowingQueryResponse))
-                    return;
-                const isFollowing = Database.getData(isFollowingQueryResponse);
+                if (user.id !== requestingUser.id) {
+                    const isFollowingQueryResponse = await Database.queries().checkFollowers(userId, requestingUser.id);
+                    if (Database.onNonSuccess(res, 404, isFollowingQueryResponse))
+                        return;
+                    const isFollowing = Database.getData(isFollowingQueryResponse);
 
-                if (!isFollowing) {
-                    res.sendStatus(403);
-                    return;
+                    if (!isFollowing) {
+                        res.sendStatus(403);
+                        return;
+                    }
                 }
             }
 
-            const postsQueryResponse = await Database.queries().getUserPosts(req.params.userId);
+            const postsQueryResponse = await Database.queries().getUserPosts(userId);
             if (Database.onNonSuccess(res, 404, postsQueryResponse))
                 return;
             const posts = Database.getData(postsQueryResponse);

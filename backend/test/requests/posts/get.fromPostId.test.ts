@@ -1,5 +1,8 @@
 import { test, expect } from "@jest/globals";
 import testJsonFetcher from "../requests";
+import { loadTestData } from "../../data/testData";
+
+const testData = loadTestData();
 
 type TestFormat = {
     name: string,
@@ -15,7 +18,7 @@ const tests: TestFormat[] = [
     },
     {
         name: 'post get',
-        postId: "abcde",
+        postId: testData.posts[0].id,
         expectedStatus: 200
     }
 ];
